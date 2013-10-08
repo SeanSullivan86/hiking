@@ -1,4 +1,0 @@
-hiking
-======
-
-Hiking Website

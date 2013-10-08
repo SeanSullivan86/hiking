@@ -1,0 +1,66 @@
+div.notifyBox {
+  background-color:#e8e8ff;
+  border:1px solid black;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  padding:4px;
+  margin:4px 0px;
+}
+
+.small {
+  font-size: 10pt;
+}
+
+.centered {
+  text-align: center;
+}
+
+.bordered {
+  border:1px solid black;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  padding:4px;
+  margin:4px 0px;
+}
+
+.sectionTitle {
+  font-family: Trebuchet MS, Tahoma, Verdana, Arial, sans-serif;
+  font-size: 1.1em;
+  font-weight: bold;
+  color: #eb8f00;
+  margin-bottom: 4px;
+}
+
+table.resultList {
+  margin:4px 0px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #aaaaaa;
+  border-spacing: 1px;
+  background-color: #aaaaaa;
+}
+
+table.resultList th {
+  text-align: center;
+  background-color:#d0d0ff;
+  font-weight: bold;
+  border-width: 1px;
+  border-color: #aaaaaa;
+
+}
+
+table.resultList td {
+  text-align: center;
+  border-width: 1px;
+  border-color: #000000;
+}
+
+table.resultList tr.even {
+  background-color: #cccccc;
+}
+
+table.resultList tr.odd {
+  background-color: #dddddd;
+}
