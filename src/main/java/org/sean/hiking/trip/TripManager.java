@@ -1,6 +1,5 @@
 package org.sean.hiking.trip;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -318,7 +317,8 @@ public class TripManager {
 		Handle h = HelloWorldService.jdbi.open();
 		
 		Query<TripPlan> query = h.createQuery("SELECT a.id, a.name, a.days, a.distance, a.elevation_gain, a.created_by, a.original_distance, "
-				+ "a.original_gain, a.starting_point, a.ending_point, a.is_mappable, a.creation_time, a.equality_string FROM trip_plans a WHERE " + criteria.getAsWhereClause("a"))
+				+ "a.original_gain, a.starting_point, a.ending_point, a.is_mappable, a.creation_time, a.equality_string FROM trip_plans a WHERE "
+				+ criteria.getAsWhereClause("a"))
 			.map(new TripPlanMapper());
 		
 		criteria.applyBindingsForQuery(query);
@@ -328,6 +328,36 @@ public class TripManager {
 		h.close();
 		
 		return plans;
+	}
+	
+	public List<Trip> getTrips(TripSearchCriteria criteria) {
+		Handle h = HelloWorldService.jdbi.open();
+		
+		String queryString = "select t.*, p.id p_id, "
+				+ "p.days p_days, p.distance p_distance, p.elevation_gain p_elevation_gain, "
+				+ "p.created_by p_created_by, p.original_distance p_original_distance, "
+				+ "p.original_gain p_original_gain, p.starting_point p_starting_point, "
+				+ "p.ending_point p_ending_point, p.equality_string p_equality_string, "
+				+ "p.name p_name, p.is_mappable p_is_mappable, p.creation_time p_creation_time "
+				+ "from trips t, trip_plans p where t.plan = p.id AND ";
+		queryString += criteria.getAsWhereClause("t","p");
+		if (criteria.getTripPlanCriteria().isPresent()) {
+			queryString += " AND ";
+			queryString += criteria.getTripPlanCriteria().get().getAsWhereClause("p");
+		}
+
+		Query<Trip> query = h.createQuery(queryString).map(new TripWithPlanMapper());
+		
+		criteria.applyBindingsForQuery(query);
+		if (criteria.getTripPlanCriteria().isPresent()) {
+			criteria.getTripPlanCriteria().get().applyBindingsForQuery(query);
+		}
+		
+		List<Trip> trips = query.list();
+		
+		h.close();
+		
+		return trips;
 	}
 
 }

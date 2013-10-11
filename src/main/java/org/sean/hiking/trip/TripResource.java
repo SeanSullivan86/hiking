@@ -14,6 +14,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
+import org.joda.time.LocalDate;
 import org.sean.hiking.APIUtils;
 import org.sean.hiking.WrappedResponse;
 import org.sean.hiking.mapdata.MapDataResponse;
@@ -26,6 +27,7 @@ import org.sean.hiking.user.UserManager;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 
 @Path("/api/trips")
@@ -90,6 +92,54 @@ public class TripResource {
     			new MapDataResponse(places, routes, Lists.newArrayList(plan.get()))
     			);
     }
+    
+    @GET
+    @Path("/trips")
+    public WrappedResponse<TripsAndPlans> getTrips(@QueryParam("minL") Optional<Integer> minDistance,
+    		@QueryParam("maxL") Optional<Integer> maxDistance,
+    		@QueryParam("minG") Optional<Integer> minGain,
+    		@QueryParam("maxG") Optional<Integer> maxGain,
+    		@QueryParam("minD") Optional<Integer> minDays,
+    		@QueryParam("maxD") Optional<Integer> maxDays,
+    		@QueryParam("s") Optional<Integer> startingPlace,
+    		@QueryParam("e") Optional<Integer> endingPlace,
+    		@QueryParam("c") Optional<String> containsPlaces,
+    		@QueryParam("cr") Optional<Integer> tripCreatedBy,
+    		@QueryParam("minTd") Optional<String> minTripDate,
+    		@QueryParam("maxTd") Optional<String> maxTripDate) {
+    	
+    	Optional<List<Integer>> placesVisited = Optional.absent();
+    	
+    	if (containsPlaces.isPresent()) {
+    		List<Integer> placeList = Lists.newArrayList();
+    		for (String place : containsPlaces.get().split(",",-1)) {
+    			placeList.add(Integer.parseInt(place));
+    		}
+    		placesVisited = Optional.of(placeList);
+    	}
+    	    	
+    	TripPlanSearchCriteria planSearchCriteria = new TripPlanSearchCriteria(
+    			Range.<Integer>all(),
+    			Range.<Integer>all(),
+    			APIUtils.getRangeFromOptionals(minDays, maxDays),
+    			startingPlace,
+    			endingPlace,
+    			placesVisited);
+    	
+    	TripSearchCriteria tripSearchCriteria = new TripSearchCriteria(
+    			APIUtils.getRangeFromOptionals(
+    					Optional.fromNullable(minTripDate.isPresent() ? new LocalDate(minTripDate.get()) : null),
+    					Optional.fromNullable(maxTripDate.isPresent() ? new LocalDate(maxTripDate.get()) : null)),
+    			APIUtils.getRangeFromOptionals(minDistance, maxDistance), 
+    			APIUtils.getRangeFromOptionals(minGain, maxGain), 
+    			tripCreatedBy,
+    			Optional.of(planSearchCriteria));
+    	
+    	return WrappedResponse.success(
+    			TripsAndPlans.fromTrips(this.tripManager.getTrips(tripSearchCriteria)
+    					));
+    }
+    		
     
     @GET
     @Path("/plans")

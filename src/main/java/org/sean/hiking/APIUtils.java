@@ -9,7 +9,7 @@ import com.google.common.collect.Range;
 public class APIUtils {
 
 	
-	public static <T extends Comparable<T>> Range<T> getRangeFromOptionals(Optional<T> lowerEndpoint, Optional<T> upperEndpoint) {
+	public static <T extends Comparable<? super T>> Range<T> getRangeFromOptionals(Optional<T> lowerEndpoint, Optional<T> upperEndpoint) {
 		if (lowerEndpoint.isPresent()) {
 			if (upperEndpoint.isPresent()) {
 				return Range.closed(lowerEndpoint.get(), upperEndpoint.get());
