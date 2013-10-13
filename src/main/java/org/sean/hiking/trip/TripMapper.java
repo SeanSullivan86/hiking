@@ -12,7 +12,8 @@ public class TripMapper implements ResultSetMapper<Trip> {
 	public Trip map(int index, ResultSet r, StatementContext ctx) throws SQLException {
 			return new Trip(
 					r.getInt("id"), 
-					null,
+					null, // tripPlan
+					null, // tripMembers
 					r.getInt("plan"),
 					r.getTimestamp("trip_date", RouteMapper.utcCalendar).getTime()/1000L,
 					r.getInt("extra_distance"),

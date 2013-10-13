@@ -137,6 +137,8 @@ $(document).ready(function(){
       }
     });
   
+  $("#newTripStartDate").datepicker({changeMonth: true, changeYear: true});
+  
   handleInitialURL();
   
   handleRouteTypeSelection();
@@ -532,8 +534,22 @@ function chooseMenu(newMenuChoice) {
 	<br />
 		<div id="currentPlanDiv"></div>
 	<div id="saveTripPlanDiv">
-	Trip Name : <input id="newTripPlanName" type="text" maxlength="100" size="40"><br />
-	<a href="javascript:saveTripPlan()">Save Trip Plan</a></div>
+		<div id="saveTripPlanChoiceDiv">
+			<a href="javascript:showSaveTripPlanForm()">Save As Trip Plan</a> 
+			<a href="javascript:showSaveTripForm()">Save As Real Trip</a>
+		</div>
+		<div id="saveTripFormDiv">
+			Trip Start Date : <input type="text" id="newTripStartDate" /><br />
+			Extra Distance : <input id="newTripExtraDistance" /><br />
+			Extra Elevation Gain : <input id="newTripExtraGain" /><br />
+		</div>
+		<div id="saveTripPlanFormDiv">
+			Trip Name : <input id="newTripPlanName" type="text" maxlength="100" size="40">
+			<br /><a href="javascript:saveTripPlan()">Submit</a>
+		</div>
+	</div>
+	
+	
 	<div id="createNewTripPlanDiv"><a href="javascript:createNewTripPlan()">Create New Trip Plan</a></div>
 </div>
 

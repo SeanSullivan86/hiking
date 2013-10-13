@@ -42,12 +42,16 @@ public class TripManager {
 		if (plan == null) {
 			return Optional.absent();
 		}
-		
-		plan.setSegments(tripDao.getSegmentsForPlan(id));
+		populateSegmentsAndTilesForPlan(plan);
+		return Optional.of(plan);
+	}
+	
+	private void populateSegmentsAndTilesForPlan(TripPlan plan) {
+		plan.setSegments(tripDao.getSegmentsForPlan(plan.getId()));
 		try {
-			plan.setOriginalPlan(mapper.readValue(tripDao.getOriginalPlanById(id), OriginalPlan.class));
+			plan.setOriginalPlan(mapper.readValue(tripDao.getOriginalPlanById(plan.getId()), OriginalPlan.class));
 		} catch (Exception e) {
-			throw new RuntimeException("Unable to deserialize original trip plan for trip " + id, e);
+			throw new RuntimeException("Unable to deserialize original trip plan for trip " + plan.getId(), e);
 		}
 		
 		Set<Integer> routes = Sets.newHashSet();
@@ -56,9 +60,8 @@ public class TripManager {
 		}
 		
 		plan.setTiles(routeManager.getTilesForRouteSet(routes));
-		
-		return Optional.of(plan);
 	}
+	
 	
 	/** Argument is a 'plan' which doesn't yet have an originalPlan created for it.
 	 */
@@ -328,6 +331,18 @@ public class TripManager {
 		h.close();
 		
 		return plans;
+	}
+	
+	public Optional<Trip> getTripById(int tripId) {
+		
+		Trip trip = tripDao.getTripWithPlanById(tripId);
+		if (trip == null) { return Optional.absent(); }
+		
+		trip.setTripMembers(tripDao.getTripMembersForTrip(tripId));
+		
+		populateSegmentsAndTilesForPlan(trip.getPlan());
+		
+		return Optional.of(trip);
 	}
 	
 	public List<Trip> getTrips(TripSearchCriteria criteria) {

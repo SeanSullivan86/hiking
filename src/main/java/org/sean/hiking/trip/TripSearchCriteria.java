@@ -18,16 +18,20 @@ public class TripSearchCriteria {
 	private Optional<Integer> createdBy;
 	
 	private Optional<TripPlanSearchCriteria> tripPlanCriteria;
+	
+	private Optional<List<Integer>> tripMembers;
 
 	public TripSearchCriteria(Range<LocalDate> dateRange,
 			Range<Integer> totalDistances, Range<Integer> totalElevationGains,
 			Optional<Integer> createdBy,
-			Optional<TripPlanSearchCriteria> tripPlanCriteria) {
+			Optional<TripPlanSearchCriteria> tripPlanCriteria,
+			Optional<List<Integer>> tripMembers) {
 		this.dateRange = dateRange;
 		this.totalDistances = totalDistances;
 		this.totalElevationGains = totalElevationGains;
 		this.createdBy = createdBy;
 		this.tripPlanCriteria = tripPlanCriteria;
+		this.tripMembers = tripMembers;
 	}
 
 	public Range<LocalDate> getDateRange() {
@@ -50,6 +54,10 @@ public class TripSearchCriteria {
 		return tripPlanCriteria;
 	}
 	
+	public Optional<List<Integer>> getTripMembers() {
+		return tripMembers;
+	}
+
 	public String getAsWhereClause(String tripTableAlias, String planTableAlias) {
 		StringBuilder str = new StringBuilder("1 = 1");
 		if (dateRange.hasLowerBound()) {
@@ -72,6 +80,13 @@ public class TripSearchCriteria {
 		}
 		if (createdBy.isPresent()) {
 			str.append(" AND " + tripTableAlias + ".created_by = :tripCreatedBy"); 
+		}
+		
+		if (tripMembers.isPresent()) {
+			List<Integer> users = tripMembers.get();
+			for (int i = 0; i < users.size(); i++) {
+				str.append(" AND " + tripTableAlias + ".id IN (SELECT trip FROM trip_members WHERE user=:member"+i+")");
+			}
 		}
 
 		return str.toString();
@@ -98,6 +113,12 @@ public class TripSearchCriteria {
 		}
 		if (createdBy.isPresent()) {
 			query.bind("tripCreatedBy", createdBy.get());
+		}
+		if (tripMembers.isPresent()) {
+			List<Integer> users = tripMembers.get();
+			for (int i = 0; i < users.size(); i++) {
+				query.bind("member"+i, users.get(i));
+			}
 		}
 	}
 	

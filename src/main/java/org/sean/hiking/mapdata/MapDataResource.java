@@ -63,6 +63,6 @@ public class MapDataResource {
     		places.add(placeManager.getPlaceById(placeId).get());
     	}
     	
-    	return WrappedResponse.success(new MapDataResponse(places, routes, null));
+    	return WrappedResponse.success(new MapDataResponse(places, routes, null, null));
     }
 }

@@ -1,9 +1,12 @@
 package org.sean.hiking.trip;
 
+import java.util.List;
+
 public class Trip {
 	
 	private int id;
 	private TripPlan plan;
+	private List<TripMember> tripMembers;
 	private int planId;
 	private long tripDate;
 	
@@ -15,10 +18,11 @@ public class Trip {
 	
 	public Trip () {}
 
-	public Trip(int id, TripPlan plan, int planId, long tripDate,
+	public Trip(int id, TripPlan plan, List<TripMember> tripMembers, int planId, long tripDate,
 			int extraDistance, int extraGain, int createdBy, long creationTime) {
 		this.id = id;
 		this.plan = plan;
+		this.tripMembers = tripMembers;
 		this.planId = planId;
 		this.tripDate = tripDate;
 		this.extraDistance = extraDistance;
@@ -89,6 +93,14 @@ public class Trip {
 
 	public void setCreationTime(long creationTime) {
 		this.creationTime = creationTime;
+	}
+
+	public List<TripMember> getTripMembers() {
+		return tripMembers;
+	}
+
+	public void setTripMembers(List<TripMember> tripMembers) {
+		this.tripMembers = tripMembers;
 	}
 	
 	

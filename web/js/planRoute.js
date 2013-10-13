@@ -91,6 +91,7 @@ function openPlanMenu() {
 		uiState = "planningRoute";
 		setURL("Planning Trip","/planningTrip");
 		$("#saveTripPlanDiv").css("display","block");
+		showResetSaveTripPlanDiv();
 		$("#planRouteActionsDiv").css("display","block");
 		$("#createNewTripPlanDiv").css("display","none");
 		startPlanRoute();
@@ -198,6 +199,25 @@ function fetchAndDisplayPlan(planId) {
 	});
 }
 
+function showResetSaveTripPlanDiv() {
+	$("#saveTripPlanChoiceDiv").css("display","none");
+	$("#saveTripPlanFormDiv").css("display","none");
+	$("#saveTripFormDiv").css("display","none");
+}
+
+function showSaveTripForm() {
+	$("#saveTripPlanChoiceDiv").css("display","none");
+	$("#saveTripPlanFormDiv").css("display","block");
+	$("#saveTripFormDiv").css("display","block");
+	uiState = "creatingTrip";
+}
+
+function showSaveTripPlanForm() {
+	$("#saveTripPlanChoiceDiv").css("display","none");
+	$("#saveTripPlanFormDiv").css("display","block");
+	uiState = "creatingTripPlan";
+}
+
 function saveTripPlan() {
 	var wirePlan = {
 			id : 0,
@@ -241,6 +261,7 @@ function createNewTripPlan() {
 	setURL("Planning Trip","/planningTrip");
 	currentPlanId = 0;
 	$("#saveTripPlanDiv").css("display","block");
+	showResetSaveTripPlanDiv();
 	$("#planRouteActionsDiv").css("display","block");
 	$("#createNewTripPlanDiv").css("display","none");
 	startPlanRoute();
@@ -357,6 +378,10 @@ function addRouteToCurrentPlan(routeId, direction) {
 	
 	updateCurrentPlanTable();
 	setupNeighboringLines();
+	
+	if (uiState == "planningRoute") {
+	    $("#saveTripPlanChoiceDiv").css("display","block");
+	}
 }
 
 var travelModes = new Hashtable();

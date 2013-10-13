@@ -82,7 +82,7 @@ public class PlaceResource {
     			new MapDataResponse(
     			Lists.newArrayList(newPlace.getResponse()),
     			Lists.<Route>newArrayList(),
-    			null));
+    			null, null));
     }
     
     @POST
@@ -119,7 +119,7 @@ public class PlaceResource {
     			new MapDataResponse(
     			Lists.newArrayList(updatedPlace.getResponse()),
     			routeManager.getRoutesForEndpoint(id),
-    			null));
+    			null, null));
     }
 
     /** Optionally give a comma separated list of tiles to restrict the search to */

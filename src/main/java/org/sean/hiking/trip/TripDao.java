@@ -27,6 +27,9 @@ public interface TripDao {
 	@SqlQuery("select t.*, p.id p_id, p.days p_days, p.distance p_distance, p.elevation_gain p_elevation_gain, p.created_by p_created_by, p.original_distance p_original_distance, p.original_gain p_original_gain, p.starting_point p_starting_point, p.ending_point p_ending_point, p.equality_string p_equality_string, p.name p_name, p.is_mappable p_is_mappable, p.creation_time p_creation_time from trips t, trip_plans p where t.plan = p.id and t.id = :id")
 	public Trip getTripWithPlanById(@Bind("id") int id);
 	
+	@RegisterMapper(TripMemberMapper.class)
+	@SqlQuery("select * from trip_members where trip = :tripId")
+	public List<TripMember> getTripMembersForTrip(@Bind("tripId") int tripId);
 
 	
 	@SqlUpdate("INSERT INTO trip_plans (days, name, distance, elevation_gain, created_by, original_plan, original_distance, original_gain, starting_point, ending_point, equality_string, is_mappable, creation_time) VALUES (:days, :name, :distance, :elevationGain, :createdBy, :originalPlan, :originalDistance, :originalGain, :startingPoint, :endingPoint, :equalityString, :isMappable, :creationTime)")

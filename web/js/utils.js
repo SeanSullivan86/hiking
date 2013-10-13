@@ -1,5 +1,3 @@
-
-
 function createChoiceDialog(dialogDescription, dialogChoices, handleResponse) {
 	var newDialog = $("<div></div>").attr("id","newModalDialog");
 	newDialog.html(dialogDescription);

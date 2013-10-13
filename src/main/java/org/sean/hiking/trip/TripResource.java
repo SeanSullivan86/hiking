@@ -89,7 +89,37 @@ public class TripResource {
     	List<Place> places = placeManager.getPlacesByIds(Lists.newArrayList(placeIds));
     	
     	return WrappedResponse.success(
-    			new MapDataResponse(places, routes, Lists.newArrayList(plan.get()))
+    			new MapDataResponse(places, routes, Lists.newArrayList(plan.get()), null)
+    			);
+    }
+    
+    @GET
+    @Path("/trips/{id}")
+    public WrappedResponse<MapDataResponse> getTripById(@PathParam("id") int id) {
+    	Optional<Trip> trip = tripManager.getTripById(id);
+    	
+    	if (!trip.isPresent()) {
+    		return WrappedResponse.failure("Requested Trip does not exist");
+    	}
+    	
+    	Set<Integer> routeIds = Sets.newHashSet();
+    	Set<Integer> placeIds = Sets.newHashSet();
+    	
+    	for (TripPlanSegment segment : trip.get().getPlan().getSegments()) {
+    		routeIds.add(segment.getRoute());
+    	}
+    	
+    	List<Route> routes = routeManager.getRoutesByIds(Lists.newArrayList(routeIds));
+    	
+    	for (Route route : routes) {
+    		placeIds.add(route.getStart());
+    		placeIds.add(route.getEnd());
+    	}
+    	
+    	List<Place> places = placeManager.getPlacesByIds(Lists.newArrayList(placeIds));
+    	
+    	return WrappedResponse.success(
+    			new MapDataResponse(places, routes, null, Lists.newArrayList(trip.get()))
     			);
     }
     
@@ -106,7 +136,8 @@ public class TripResource {
     		@QueryParam("c") Optional<String> containsPlaces,
     		@QueryParam("cr") Optional<Integer> tripCreatedBy,
     		@QueryParam("minTd") Optional<String> minTripDate,
-    		@QueryParam("maxTd") Optional<String> maxTripDate) {
+    		@QueryParam("maxTd") Optional<String> maxTripDate,
+    		@QueryParam("u") Optional<String> tripMembers) {
     	
     	Optional<List<Integer>> placesVisited = Optional.absent();
     	
@@ -116,6 +147,15 @@ public class TripResource {
     			placeList.add(Integer.parseInt(place));
     		}
     		placesVisited = Optional.of(placeList);
+    	}
+    	
+    	Optional<List<Integer>> tripUsers = Optional.absent();
+    	if (tripMembers.isPresent()) {
+    		List<Integer> userList = Lists.newArrayList();
+    		for (String user : tripMembers.get().split(",",-1)) {
+    			userList.add(Integer.parseInt(user));
+    		}
+    		tripUsers = Optional.of(userList);
     	}
     	    	
     	TripPlanSearchCriteria planSearchCriteria = new TripPlanSearchCriteria(
@@ -133,7 +173,8 @@ public class TripResource {
     			APIUtils.getRangeFromOptionals(minDistance, maxDistance), 
     			APIUtils.getRangeFromOptionals(minGain, maxGain), 
     			tripCreatedBy,
-    			Optional.of(planSearchCriteria));
+    			Optional.of(planSearchCriteria),
+    			tripUsers);
     	
     	return WrappedResponse.success(
     			TripsAndPlans.fromTrips(this.tripManager.getTrips(tripSearchCriteria)

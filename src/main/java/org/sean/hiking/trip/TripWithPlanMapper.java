@@ -29,6 +29,7 @@ public class TripWithPlanMapper implements ResultSetMapper<Trip> {
 								r.getInt("p_is_mappable"),
 								r.getTimestamp("p_creation_time", RouteMapper.utcCalendar).getTime()/1000L
 						),
+					null, // tripMembers
 					r.getInt("plan"),
 					r.getTimestamp("trip_date", RouteMapper.utcCalendar).getTime()/1000L,
 					r.getInt("extra_distance"),
