@@ -1,5 +1,6 @@
 package org.sean.hiking.user;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.sean.hiking.APIUtils;
@@ -95,6 +96,10 @@ public class UserManager {
 		User user = this.userDao.findById(credentials.getId());
 		
 		return user != null && user.getHash().equals(credentials.getHash());
+	}
+	
+	public List<UserAndUsername> getAllUserIdsAndUsernames() {
+		return userDao.findAllUsers();
 	}
 
 }

@@ -205,11 +205,71 @@ function showResetSaveTripPlanDiv() {
 	$("#saveTripFormDiv").css("display","none");
 }
 
+var userList = null;
+
 function showSaveTripForm() {
 	$("#saveTripPlanChoiceDiv").css("display","none");
 	$("#saveTripPlanFormDiv").css("display","block");
 	$("#saveTripFormDiv").css("display","block");
 	uiState = "creatingTrip";
+	
+	if (userList == null) {
+		$("#newTripMembersDiv").html('<img src="//cdn.jsdelivr.net/select2/3.4.3/select2-spinner.gif">');
+		ajaxGet({
+			url : "http://192.241.227.45/api/users/usernames",
+			success: function(allUsers) {
+				userList = allUsers;
+				createTripMemberSelect();
+			}
+		});
+	} else {
+		createTripMemberSelect();
+	}
+}
+
+function formatTripUsernames(state) {
+    if (!state.id) return state.text; // optgroup
+    if (loggedIn && state.id == siteCredentials.id) {
+    	return state.text + " (me)";
+    }
+    return state.text;
+}
+
+function createTripMemberSelect() {
+	var tripMembersDiv = $("#newTripMembersDiv").empty();
+	var tripMembersSelect = $('<select id="newTripMembers"></select>')
+		.attr("multiple","multiple")
+		.css("width","300px")
+	    .appendTo(tripMembersDiv);
+	
+	for (var i = 0; i < userList.length; i++) {
+		$("<option></option>")
+			.attr("value", userList[i].id)
+			.text(userList[i].name)
+			.appendTo(tripMembersSelect);
+	}
+	
+	$("#newTripMembers").select2({
+		placeholder : "Enter Site Users on this trip",
+		formatResult : formatTripUsernames,
+		formatSelection : formatTripUsernames
+	});
+	
+	if (loggedIn) {
+		$("#newTripMembers").select2("val", siteCredentials.id);
+	}
+	
+	var tripNonMembersDiv = $("#newTripNonMembersDiv").empty();
+	var tripNonMembersSelect = $('<input id="newTripNonMembers"></input>')
+		.attr("type", "hidden")
+		.attr("multiple","multiple")
+		.css("width","300px")
+	    .appendTo(tripNonMembersDiv);
+	
+	$("#newTripNonMembers").select2({ tags: [],
+		placeholder : "Enter other people on this trip",
+		tokenSeparators: [","]
+	});
 }
 
 function showSaveTripPlanForm() {

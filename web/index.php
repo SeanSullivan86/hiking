@@ -60,6 +60,12 @@ table.hikePlan tr.totals td {
 <script type="text/javascript" src="/js/jshashset-3.0.js"></script>
 
 
+<link type="text/css" rel="stylesheet" href="//cdn.jsdelivr.net/select2/3.4.3/select2.css" />
+<script type="text/javascript" src="//cdn.jsdelivr.net/select2/3.4.3/select2.js"></script>
+<script type="text/javascript" src="//cdn.jsdelivr.net/select2/3.4.3/select2.min.js"></script>
+
+
+
 <link type="text/css" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" rel="Stylesheet" />	
 
 <script type="text/javascript" src="/js/utils.js"></script>
@@ -542,6 +548,9 @@ function chooseMenu(newMenuChoice) {
 			Trip Start Date : <input type="text" id="newTripStartDate" /><br />
 			Extra Distance : <input id="newTripExtraDistance" /><br />
 			Extra Elevation Gain : <input id="newTripExtraGain" /><br />
+			Trip Members (existing users) <br />
+			<span style="margin-left:40px">Site Users:	<span id="newTripMembersDiv"></span></span><br />
+			<span style="margin-left:40px">Other People: <span id="newTripNonMembersDiv"></span></span><br />
 		</div>
 		<div id="saveTripPlanFormDiv">
 			Trip Name : <input id="newTripPlanName" type="text" maxlength="100" size="40">
