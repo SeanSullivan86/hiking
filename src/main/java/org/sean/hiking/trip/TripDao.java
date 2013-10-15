@@ -75,6 +75,7 @@ public interface TripDao {
 	@SqlQuery("SELECT id, name, days, distance, elevation_gain, created_by, original_distance, original_gain, starting_point, ending_point, is_mappable, creation_time FROM trip_plans WHERE id IN (SELECT trip FROM trip_plan_segments WHERE route = :routeId)")
 	public List<TripPlan> getPlansByRoute(@Bind("routeId") int routeId);
 	
+	@RegisterMapper(TripPlanMapper.class)
 	@SqlQuery("SELECT id, name, days, distance, elevation_gain, created_by, original_distance, original_gain, starting_point, ending_point, is_mappable, creation_time FROM trip_plans WHERE equality_string = :equalityString")
 	public List<TripPlan> getPlansByEqualityString(@Bind("equalityString") String equalityString);
 	

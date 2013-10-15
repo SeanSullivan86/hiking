@@ -124,6 +124,17 @@ public class TripResource {
     }
     
     @GET
+    @Path("/plans/equalityString/{eq}")
+    public WrappedResponse<TripPlan> getPlanByEqualityString(@PathParam("eq") String equalityString) {
+    	Optional<TripPlan> plan = this.tripManager.getTripPlanByEqualityString(equalityString);
+    	
+    	if (plan.isPresent()) {
+    		return WrappedResponse.success(plan.get());
+    	}
+    	return WrappedResponse.success(null);
+    }
+    
+    @GET
     @Path("/trips")
     public WrappedResponse<TripsAndPlans> getTrips(@QueryParam("minL") Optional<Integer> minDistance,
     		@QueryParam("maxL") Optional<Integer> maxDistance,

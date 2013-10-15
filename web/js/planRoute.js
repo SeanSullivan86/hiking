@@ -6,6 +6,7 @@ function TripPlan() {
 	this.addCamp = __addCampToPlan;
 	this.addSegment = __addSegmentToPlan;
 	this.removeSegment = __removeSegmentFromPlan;
+	this.getEqualityString = __getEqualityString;
 }
 
 function __addCampToPlan() {
@@ -33,6 +34,23 @@ function __removeSegmentFromPlan() {
 		this.distance -= removedSegment.distance;
 		this.elevationGain -= removedSegment.elevationGain;
 	}
+}
+
+function __getEqualityString() {
+	var firstSegment = this.days[0].segments[0];
+	var firstRoute = routesByRouteId.get(firstSegment.routeId);
+	var equalityString = firstSegment.direction == 1 ? firstRoute.start : firstRoute.end;
+	
+	for (var i = 0; i < this.dayCount; i++) {
+		if (i > 0) {
+			equalityString += ",x";
+		}
+		var day = this.days[i];
+		for (var j = 0; j < day.segments.length; j++) {
+			equalityString += "," + day.segments[j].routeId + "," + day.segments[j].mode;
+		}
+	}
+	return equalityString;
 }
 
 function TripDay(daynum) {
@@ -201,6 +219,8 @@ function fetchAndDisplayPlan(planId) {
 
 function showResetSaveTripPlanDiv() {
 	$("#saveTripPlanChoiceDiv").css("display","none");
+	$("#tripPlanAlreadyExistsDiv").empty();
+	$("#submitTripPlanDiv").empty();
 	$("#saveTripPlanFormDiv").css("display","none");
 	$("#saveTripFormDiv").css("display","none");
 }
@@ -209,7 +229,6 @@ var userList = null;
 
 function showSaveTripForm() {
 	$("#saveTripPlanChoiceDiv").css("display","none");
-	$("#saveTripPlanFormDiv").css("display","block");
 	$("#saveTripFormDiv").css("display","block");
 	uiState = "creatingTrip";
 	
@@ -225,7 +244,42 @@ function showSaveTripForm() {
 	} else {
 		createTripMemberSelect();
 	}
+	
+	checkIfNewTripPlanAlreadyExists("trip");
 }
+
+function showSaveTripPlanForm() {
+	$("#saveTripPlanChoiceDiv").css("display","none");
+	uiState = "creatingTripPlan";
+	checkIfNewTripPlanAlreadyExists("plan")
+}
+
+function checkIfNewTripPlanAlreadyExists(tripOrPlan) {
+	$("#submitTripPlanDiv").empty();
+	$("#tripPlanAlreadyExistsDiv").html('Checking if trip plan already exists: <img src="//cdn.jsdelivr.net/select2/3.4.3/select2-spinner.gif">');
+		
+	ajaxGet({
+		url : "http://192.241.227.45/api/trips/plans/equalityString/" + currentPlan.getEqualityString(),
+		success: function(existingPlan) {
+			if (existingPlan == null) {
+				$("#tripPlanAlreadyExistsDiv").html("Trip plan hasn't been created before: <img src=\"images/checkmark.png\">");
+				$("#saveTripPlanFormDiv").css("display","block");
+				if (tripOrPlan == "plan") {
+					$("#submitTripPlanDiv").html('<a href="javascript:saveTripPlan()">Submit</a>');
+				}
+			} else {
+				$("#tripPlanAlreadyExistsDiv").html(
+						'Trip Plan already exists : <a href="javascript:displayPlan('+existingPlan.id+')">' + existingPlan.name + "</a>");
+			}
+			if (tripOrPlan == "trip") {
+				$("#submitTripPlanDiv").html('<a href="javascript:saveTrip()">Submit</a>');
+			}
+		}
+	});
+	
+	
+}
+
 
 function formatTripUsernames(state) {
     if (!state.id) return state.text; // optgroup
@@ -272,11 +326,7 @@ function createTripMemberSelect() {
 	});
 }
 
-function showSaveTripPlanForm() {
-	$("#saveTripPlanChoiceDiv").css("display","none");
-	$("#saveTripPlanFormDiv").css("display","block");
-	uiState = "creatingTripPlan";
-}
+
 
 function saveTripPlan() {
 	var wirePlan = {

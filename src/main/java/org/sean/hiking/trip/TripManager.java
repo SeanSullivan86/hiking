@@ -315,6 +315,16 @@ public class TripManager {
 		
 		return WrappedResponse.success(getTripPlanById(tripId).get());
 	}
+	
+	public Optional<TripPlan> getTripPlanByEqualityString(String equalityString) {
+		List<TripPlan> plans = tripDao.getPlansByEqualityString(equalityString);
+		
+		if (plans.isEmpty()) {
+			return Optional.absent();
+		}
+		
+		return Optional.of(plans.get(0));
+	}
 		
 	public List<TripPlan> getTripPlans(TripPlanSearchCriteria criteria) {
 		Handle h = HelloWorldService.jdbi.open();

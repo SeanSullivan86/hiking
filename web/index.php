@@ -552,10 +552,11 @@ function chooseMenu(newMenuChoice) {
 			<span style="margin-left:40px">Site Users:	<span id="newTripMembersDiv"></span></span><br />
 			<span style="margin-left:40px">Other People: <span id="newTripNonMembersDiv"></span></span><br />
 		</div>
+		<div id="tripPlanAlreadyExistsDiv"></div>
 		<div id="saveTripPlanFormDiv">
 			Trip Name : <input id="newTripPlanName" type="text" maxlength="100" size="40">
-			<br /><a href="javascript:saveTripPlan()">Submit</a>
 		</div>
+		<div id="submitTripPlanDiv"></div>
 	</div>
 	
 	
