@@ -10,15 +10,7 @@ import org.skife.jdbi.v2.sqlobject.stringtemplate.UseStringTemplate3StatementLoc
 
 @UseStringTemplate3StatementLocator
 public interface TripDao {
-	
-	@SqlUpdate("INSERT INTO trips (plan, trip_date, created_by, extra_distance, extra_gain, creation_time) VALUES (:plan, :tripDate, :createdBy, :extraDistance, :extraGain, :creationTime")
-	public void insertTrip(@Bind("plan") int planId,
-			@Bind("tripDate") String tripDate,
-			@Bind("createdBy") String createdBy,
-			@Bind("extraDistance") int extraDistance,
-			@Bind("extraGain") int extraGain,
-			@Bind("creationTime") String creationTime);
-	
+		
 	@SqlQuery("SELECT * FROM trips WHERE id = :id")
 	@RegisterMapper(TripMapper.class)
 	public Trip getTripById(@Bind("id") int id);
@@ -46,6 +38,19 @@ public interface TripDao {
 			@Bind("equalityString") String equalityString,
 			@Bind("isMappable") int isMappable,
 			@Bind("creationTime") String creationTime);
+	
+	@SqlUpdate("INSERT INTO trips (plan, trip_date, created_by, extra_distance, extra_gain, creation_time) VALUES (:plan, :tripDate, :createdBy, :extraDistance, :extraGain, :creationTime)")
+	public void insertTrip(@Bind("plan") int planId,
+			@Bind("tripDate") String tripDate,
+			@Bind("extraDistance") int extraDistance,
+			@Bind("extraGain") int extraGain,
+			@Bind("createdBy") int createdBy,
+			@Bind("creationTime") String creationTime);
+		
+	@SqlUpdate("INSERT INTO trip_members (trip, user, name) VALUES (:trip, :user, :name)")
+	public void insertTripMember(@Bind("trip") int tripId,
+			@Bind("user") int userId,
+			@Bind("name") String name);
 	
 	@SqlUpdate("INSERT INTO trip_plan_segments (trip, day, sequence, route, direction, mode) VALUES (:trip, :day, :sequence, :route, :direction, :mode)")
 	public void insertTripPlanSegment(@Bind("trip") int trip,

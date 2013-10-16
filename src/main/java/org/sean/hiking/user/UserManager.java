@@ -98,6 +98,12 @@ public class UserManager {
 		return user != null && user.getHash().equals(credentials.getHash());
 	}
 	
+	public Optional<User> getUserById(int id) {
+		User user = this.userDao.findById(id);
+		
+		return Optional.fromNullable(user);
+	}
+	
 	public List<UserAndUsername> getAllUserIdsAndUsernames() {
 		return userDao.findAllUsers();
 	}

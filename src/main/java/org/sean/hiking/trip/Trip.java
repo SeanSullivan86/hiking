@@ -2,6 +2,10 @@ package org.sean.hiking.trip;
 
 import java.util.List;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.sean.hiking.WrappedResponse;
+
 public class Trip {
 	
 	private int id;
@@ -104,5 +108,27 @@ public class Trip {
 	}
 	
 	
+	public WrappedResponse<String> validateFields() {
+		if (planId <= 0) {
+			return WrappedResponse.failure("Missing a trip plan for the new trip");
+		}
+		
+		if (tripMembers == null || tripMembers.isEmpty()) {
+			return WrappedResponse.failure("New Trip has no trip members");
+		}
+		
+		if (tripMembers.size() > 100) {
+			return WrappedResponse.failure("Trips can have at most 100 members");
+		}
+		
+		DateTime dateTime = new DateTime(creationTime*1000L, DateTimeZone.UTC);
+		if (dateTime.getMillisOfDay() != 0) {
+			return WrappedResponse.failure("Trip Date must be at midnight UTC, specified in epoch seconds");
+		}
+		
+		// TODO extraDistance, extraGain
+				
+		return WrappedResponse.success("Valid");
+	}
 
 }

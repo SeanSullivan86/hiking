@@ -44,10 +44,11 @@ public class HelloWorldService extends Service<HelloWorldConfiguration> {
         final RoutesDao routesDao = jdbi.onDemand(RoutesDao.class);
         final UserDao userDao = jdbi.onDemand(UserDao.class);
         final TripDao tripDao = jdbi.onDemand(TripDao.class);
+        final UserManager userManager = new UserManager(userDao);
         final PlaceManager placeManager = new PlaceManager(placesDao);
         final RouteManager routeManager = new RouteManager(routesDao);
-        final TripManager tripManager = new TripManager(tripDao, routeManager, placeManager);
-        final UserManager userManager = new UserManager(userDao);
+        final TripManager tripManager = new TripManager(tripDao, routeManager, placeManager, userManager);
+        
         placeManager.setRouteManager(routeManager);
         routeManager.setPlaceManager(placeManager);
         routeManager.setTripManager(tripManager);

@@ -5,6 +5,8 @@ public class TripMember {
 	private int user;
 	private String name;
 	
+	public TripMember() { }
+	
 	public TripMember(int trip, int user, String name) {
 		this.trip = trip;
 		this.user = user;

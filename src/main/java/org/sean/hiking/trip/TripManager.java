@@ -13,6 +13,8 @@ import org.sean.hiking.place.PlaceManager;
 import org.sean.hiking.place.PlaceMapper;
 import org.sean.hiking.route.Route;
 import org.sean.hiking.route.RouteManager;
+import org.sean.hiking.user.User;
+import org.sean.hiking.user.UserManager;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.Query;
 
@@ -28,11 +30,13 @@ public class TripManager {
 	private ObjectMapper mapper;
 	private RouteManager routeManager;
 	private PlaceManager placeManager;
+	private UserManager userManager;
 	
-	public TripManager(TripDao tripDao, RouteManager routeManager, PlaceManager placeManager) {
+	public TripManager(TripDao tripDao, RouteManager routeManager, PlaceManager placeManager, UserManager userManager) {
 		this.tripDao = tripDao;
 		this.routeManager = routeManager;
 		this.placeManager = placeManager;
+		this.userManager = userManager;
 		mapper = new ObjectMapper();
 	}
 	
@@ -314,6 +318,46 @@ public class TripManager {
 		}
 		
 		return WrappedResponse.success(getTripPlanById(tripId).get());
+	}
+	
+	public WrappedResponse<Trip> insertTrip(Trip trip) {
+		if (trip == null) {
+			return WrappedResponse.failure("Cannot insert null trip");
+		}
+				
+		// Validate basic sanity of fields (no DB checks)
+		WrappedResponse<String> fieldValidation = trip.validateFields();
+		if (! fieldValidation.isSuccess()) {
+			return WrappedResponse.failure("Cannot insert trip (" + fieldValidation.getMessage() + ")");
+		}
+		
+		// Validate that all trip members exist, and set their usernames
+		for (TripMember tripMember : trip.getTripMembers()) {
+			if (tripMember.getUser() > 0) {
+				Optional<User> user = this.userManager.getUserById(tripMember.getUser());
+				if (!user.isPresent()) {
+					return WrappedResponse.failure("One of the trip member site users no longer exists");
+				}
+				
+				tripMember.setName(user.get().getUsername());
+			}
+		}
+		
+		String creationTime = PlaceMapper.format.format(new Date(System.currentTimeMillis()));
+		tripDao.insertTrip(trip.getPlanId(), 
+				PlaceMapper.dateFormat.format(new Date(trip.getTripDate()*1000L)),
+				trip.getExtraDistance(), 
+				trip.getExtraGain(), 
+				trip.getCreatedBy(), 
+				creationTime);
+		
+		int tripId = tripDao.lastInsertId();
+		
+		for (TripMember tripMember : trip.getTripMembers()) {
+			tripDao.insertTripMember(tripId, tripMember.getUser(), tripMember.getName());
+		}
+		
+		return WrappedResponse.success(getTripById(tripId).get());
 	}
 	
 	public Optional<TripPlan> getTripPlanByEqualityString(String equalityString) {

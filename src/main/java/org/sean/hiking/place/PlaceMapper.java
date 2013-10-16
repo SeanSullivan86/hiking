@@ -12,6 +12,8 @@ public class PlaceMapper implements ResultSetMapper<Place> {
 
 	public static SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	
+	public static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	
 	public Place map(int index, ResultSet r, StatementContext ctx) throws SQLException {
 			return new Place(
 					r.getInt("id"),

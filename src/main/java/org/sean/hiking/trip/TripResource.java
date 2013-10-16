@@ -48,8 +48,8 @@ public class TripResource {
     
     @POST
     @Path("/plans")
-    public WrappedResponse<TripPlan> insert(@HeaderParam(
-    		HttpHeaders.AUTHORIZATION) String auth,
+    public WrappedResponse<TripPlan> insert(
+    		@HeaderParam(HttpHeaders.AUTHORIZATION) String auth,
     		TripPlan tripPlan) {
     	Optional<User> authUser = this.userManager.getUserFromAuthString(auth);
     	if (!authUser.isPresent()) return WrappedResponse.failure("You must be logged in to add a trip plan.");
@@ -61,6 +61,40 @@ public class TripResource {
     	tripPlan.setCreatedBy(authUser.get().getId());
     	
     	return tripManager.insert(tripPlan);
+    }
+    
+    @POST
+    @Path("/trips")
+    public WrappedResponse<Trip> insertTrip(
+    		@HeaderParam(HttpHeaders.AUTHORIZATION) String auth,
+    		Trip trip) {
+    	Optional<User> authUser = this.userManager.getUserFromAuthString(auth);
+    	if (!authUser.isPresent()) return WrappedResponse.failure("You must be logged in to add a trip.");
+    	
+    	if (trip == null) {
+    		return WrappedResponse.failure("Trip was null");
+    	}
+    	
+    	trip.setCreatedBy(authUser.get().getId());
+    	
+    	// Create new plan first, if necessary
+    	if (trip.getPlanId() == 0) {
+    		if (trip.getPlan() == null) {
+    			return WrappedResponse.failure("No trip plan specified for the new trip");
+    		}
+    		trip.getPlan().setCreatedBy(authUser.get().getId());
+    		
+    		WrappedResponse<TripPlan> newPlan = tripManager.insert(trip.getPlan());
+    		
+    		if (!newPlan.isSuccess()) {
+    			return WrappedResponse.failure("Unable to create new trip plan : " + newPlan.getMessage());
+    		}
+    		
+    		trip.setPlan(newPlan.getResponse());
+    		trip.setPlanId(newPlan.getResponse().getId());
+    	}
+    	
+    	return tripManager.insertTrip(trip);
     }
         
     @GET
