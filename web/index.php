@@ -63,7 +63,7 @@ table.hikePlan tr.totals td {
 <link type="text/css" rel="stylesheet" href="//cdn.jsdelivr.net/select2/3.4.3/select2.css" />
 <script type="text/javascript" src="//cdn.jsdelivr.net/select2/3.4.3/select2.js"></script>
 <script type="text/javascript" src="//cdn.jsdelivr.net/select2/3.4.3/select2.min.js"></script>
-
+<script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/2.3.1/moment.min.js"></script>
 
 
 <link type="text/css" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" rel="Stylesheet" />	
@@ -191,6 +191,10 @@ function handleInitialURL() {
 		var planId = parseInt(initialURL.match("\/plans\/(\\d+)")[1]);
 		chooseMenu("plan");
 		displayPlan(planId);
+	} else if (initialURL.startsWith("/trips")) {
+		var tripId = parseInt(initialURL.match("\/trips\/(\\d+)")[1]);
+		chooseMenu("plan");
+		displayTrip(tripId);		
 	}
 }
 
@@ -538,7 +542,8 @@ function chooseMenu(newMenuChoice) {
 		<a href="javascript:addCampToCurrentPlan()">Add Camp</a>
 	</div>
 	<br />
-		<div id="currentPlanDiv"></div>
+	<div id="currentPlanDiv"></div>
+	<div id="currentTripDiv"></div>
 	<div id="saveTripPlanDiv">
 		<div id="saveTripPlanChoiceDiv">
 			<a href="javascript:showSaveTripPlanForm()">Save As Trip Plan</a> 

@@ -167,6 +167,61 @@ function displayPlan(planId) {
 	fetchAndDisplayPlan(planId);
 }
 
+var currentTripId = 0;
+var currentTrip = null;
+var tripsByTripId = new Hashtable();
+
+function displayTrip(tripId) {
+	setURL("Trip " + tripId, "/trips/" + tripId);
+	$("#saveTripPlanDiv").css("display", "none");
+	$("#planRouteActionsDiv").css("display", "none");
+	$("#createNewTripPlanDiv").css("display", "block");
+
+	clearTripPlanMapUI();
+	
+	currentTripId = tripId;
+	ajaxGet({
+		url : "http://192.241.227.45/api/trips/trips/" + tripId,
+		success : function(tripData) {
+			var jsonTrip = tripData.trips[0];
+			var jsonPlan = jsonTrip.plan;
+
+			receiveMapDataIncompleteTiles(tripData);
+
+			currentPlan = createPlan(jsonPlan);
+			currentPlanId = currentPlan.id;
+			plansByPlanId.put(currentPlan.id, currentPlan);
+
+			drawCurrentPlan();
+			updateCurrentPlanTable();
+
+			currentTrip = jsonTrip;
+			tripsByTripId.put(jsonTrip.id, jsonTrip);
+			
+			showCurrentTripDetails();
+			
+			map.fitBounds(getCurrentPlanBounds());
+		}
+	});
+}
+
+function showCurrentTripDetails() {
+	var tripDiv = $("#currentTripDiv").empty();
+	var tripDate = moment.utc(currentTrip.tripDate*1000).format("YYYY-MM-DD");
+	$("<div></div>").html("Trip Date : " + tripDate).appendTo(tripDiv);
+	var members = $("<div>Trip Members : </div>");
+	for (var i = 0; i < currentTrip.tripMembers.length; i++) {
+		if (i > 0) { members.append(" , ") }
+		var member = currentTrip.tripMembers[i];
+		if (member.user > 0) {
+			members.append('<a href="javascript:selectUser('+member.user+')">'+member.name+"</a>");
+		} else {
+			members.append(member.name);
+		}
+	}
+	members.appendTo(tripDiv);
+}
+
 function getCurrentPlanBounds() {
 	var planBounds = new google.maps.LatLngBounds();
 
@@ -212,15 +267,6 @@ function fetchAndDisplayPlan(planId) {
 			updateCurrentPlanTable();
 
 			map.fitBounds(getCurrentPlanBounds());
-
-			/*
-			 * forceUpdateTilesAndCallback(jsonPlan.tiles, function() {
-			 * currentPlan = createPlan(jsonPlan);
-			 * plansByPlanId.put(currentPlan.id, currentPlan);
-			 * 
-			 * drawCurrentPlan(); updateCurrentPlanTable(); });
-			 */
-
 		}
 	});
 }
@@ -444,6 +490,7 @@ function createNewTripPlan() {
 function startPlanRoute() {
 	$("#planRouteDiv").css("display", "block");
 	$("#currentPlanDiv").empty();
+	$("#currentTripDiv").empty();
 	uiState = "planningRoute";
 	currentPlan = new TripPlan();
 	currentPlanVertices.length = 0;
