@@ -22,6 +22,12 @@ function createChoiceDialog(dialogDescription, dialogChoices, handleResponse) {
     });
 }
 
+function clearMapOverlayArray(arr) {
+	while (arr.length > 0) {
+		arr.pop().setMap(null);
+	}
+}
+
 
 // Specify options "url", "success"
 function ajaxGet(options) {

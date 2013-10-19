@@ -295,16 +295,13 @@ function updateMarkers() {
 
 function handleMarkerClick(placeId) {
 	if (uiState == "new") {
-		place = placesByPlaceId.get(placeId);
-    	$("#clickDetail").html("Name: " + place.name + "<br />" +
-    			"Type: " + place.type + "<br />" +
-    			"Elevation: " + place.elevation);
+    	placeViewer.setPlace(placeId);
 	} else if (uiState == "addRoute") {
 		setRouteStart(placeId);
 	} else if (uiState == "addRoute2") {
 		setRouteEnd(placeId);
 	} else if (uiState == "planningRoute") {
-		addPointToCurrentPlan(placeId);
+		tripPlanBuilder.addPointToCurrentPlan(placeId);
 	} else if (uiState == "editPlace") {
 		setPlaceToEdit(placeId);
 	}
@@ -314,7 +311,7 @@ function handleLineClick(routeId) {
 	if (uiState == "editRoute") {
 		setRouteToEdit(routeId);
 	} else if (uiState == "planningRoute") {
-		handleNeighboringMapLineClick(routeId);
+		tripPlanBuilder.handleNeighboringMapLineClick(routeId);
 	} else if (uiState == "splitRoute") {
 		handleSplitRouteSelectRoute(routeId);
 	}

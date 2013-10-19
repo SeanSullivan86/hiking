@@ -189,12 +189,10 @@ function handleInitialURL() {
 	var initialURL = window.location.pathname;
 	if (initialURL.startsWith("/plans")) {
 		var planId = parseInt(initialURL.match("\/plans\/(\\d+)")[1]);
-		chooseMenu("plan");
-		displayPlan(planId);
+		tripViewer.setPlan(planId);
 	} else if (initialURL.startsWith("/trips")) {
 		var tripId = parseInt(initialURL.match("\/trips\/(\\d+)")[1]);
-		chooseMenu("plan");
-		displayTrip(tripId);		
+		tripViewer.setTrip(tripId);		
 	}
 }
 
@@ -238,7 +236,13 @@ var menuChoices = [
 	  code : "edit",
 	  open : openEditMapMenu,
 	  close : closeEditMapMenu
-  }];
+  },
+  {
+	  code : "details",
+	  open : openDetailsMenu,
+	  close : closeDetailsMenu
+  }
+];
 
 function chooseMenu(newMenuChoice) {
 	if (newMenuChoice == currentMenuChoice) return;
@@ -284,12 +288,16 @@ function chooseMenu(newMenuChoice) {
 <td valign="top">
 
 <div id="mainMenu">
-	<a href="javascript:chooseMenu('search')">Search</a> |
-	<a href="javascript:chooseMenu('edit')">Edit Map</a> |  
-	<a href="javascript:chooseMenu('plan')">Plan/Save Trip</a>
+	<a href="javascript:chooseMenu('search')">Search</a> | 
+	<a href="javascript:chooseMenu('edit')">Edit Map</a> | 
+	<a href="javascript:chooseMenu('plan')">Plan/Save Trip</a> | 
+	<a href="javascript:chooseMenu('details')">View Details</a>
 </div>
 
-<div id="clickDetail"></div>
+<div id="detailsMenuDiv">
+	<div id="itemDetailDiv"></div>
+	<div id="detailHistoryDiv"></div>
+</div>
 
 <div id="editMenuDiv" style="display:none">
 
@@ -537,17 +545,16 @@ function chooseMenu(newMenuChoice) {
 
 <div id="planRouteDiv" style="display:none">
 	<div id="planRouteActionsDiv">
-		<a href="javascript:startPlanRoute()">Reset Hike</a> | 
-		<a href="javascript:removeLastPointFromPlan()">Remove Last Point</a> |
-		<a href="javascript:addCampToCurrentPlan()">Add Camp</a>
+		<a href="javascript:tripPlanBuilder.startPlanRoute()">Reset Hike</a> | 
+		<a href="javascript:tripPlanBuilder.removeLastPointFromPlan()">Remove Last Point</a> |
+		<a href="javascript:tripPlanBuilder.addCampToCurrentPlan()">Add Camp</a>
 	</div>
 	<br />
 	<div id="currentPlanDiv"></div>
-	<div id="currentTripDiv"></div>
 	<div id="saveTripPlanDiv">
 		<div id="saveTripPlanChoiceDiv">
-			<a href="javascript:showSaveTripPlanForm()">Save As Trip Plan</a> 
-			<a href="javascript:showSaveTripForm()">Save As Real Trip</a>
+			<a href="javascript:tripPlanBuilder.showSaveTripPlanForm()">Save As Trip Plan</a> 
+			<a href="javascript:tripPlanBuilder.showSaveTripForm()">Save As Real Trip</a>
 		</div>
 		<div id="saveTripFormDiv">
 			Trip Start Date : <input type="text" id="newTripStartDate" /><br />
@@ -564,8 +571,6 @@ function chooseMenu(newMenuChoice) {
 		<div id="submitTripPlanDiv"></div>
 	</div>
 	
-	
-	<div id="createNewTripPlanDiv"><a href="javascript:createNewTripPlan()">Create New Trip Plan</a></div>
 </div>
 
 <div id="searchDiv" style="display:none">
