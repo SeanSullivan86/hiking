@@ -241,6 +241,11 @@ var menuChoices = [
 	  code : "details",
 	  open : openDetailsMenu,
 	  close : closeDetailsMenu
+  },
+  {
+	  code : "gps",
+	  open : openGpsMenu,
+	  close : closeGpsMenu
   }
 ];
 
@@ -291,7 +296,8 @@ function chooseMenu(newMenuChoice) {
 	<a href="javascript:chooseMenu('search')">Search</a> | 
 	<a href="javascript:chooseMenu('edit')">Edit Map</a> | 
 	<a href="javascript:chooseMenu('plan')">Plan/Save Trip</a> | 
-	<a href="javascript:chooseMenu('details')">View Details</a>
+	<a href="javascript:chooseMenu('details')">View Details</a> |
+	<a href="javascript:chooseMenu('gps')">GPS Tracks</a>
 </div>
 
 <div id="detailsMenuDiv">
@@ -588,6 +594,12 @@ function chooseMenu(newMenuChoice) {
 	
 	<div id="searchResultsTableDiv" style="display:none"></div>
 
+</div>
+
+<div id="gpsMenuDiv" style="display:none">
+<input id="gpsFileInput" type="file" multiple/>
+<br />
+<div id="gpsFileList"></div>
 </div>
 
 <span id="alertMessage" class="alertMessage"></span>

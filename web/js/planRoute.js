@@ -883,3 +883,113 @@ function closeDetailsMenu() {
 	$("#detailsMenuDiv").css("display","none");
 	tripViewer.clearUI();
 }
+
+var gpxViewer = {
+	
+	tracks : [], // isSelected, track (array of LatLng), name, polyline
+	
+	redrawList : function() {
+		var fileListDiv = $("#gpsFileList").empty();
+		
+		if (this.tracks.length == 0) {
+			return;
+		}
+		
+		var header = $("<div><br />GPS Files: </div>").appendTo(fileListDiv);
+		
+		var fileTable = $('<table></table>')
+				.attr({ id : "gpsFileTable"})
+				.addClass("hikePlan");
+
+		var headerRow = $("<tr><th></th><th>File Name</th></tr>")
+				.appendTo(fileTable);
+
+		for ( var i = 0; i < this.tracks.length; i++) {
+			var trackLog = this.tracks[i];
+			var row = $("<tr></tr>").addClass(i % 2 == 0 ? "even" : "odd")
+					.appendTo(fileTable);
+			var inputTd = $("<td></td>").appendTo(row);
+			
+			var input = $("<input />").attr("id", "gpsFileInput"+i).attr("type","checkbox");
+			if (trackLog.isSelected) {
+				input.attr("checked","checked");
+			}
+			input.change((function(idx) { 
+					return function() { 
+						if ($("#gpsFileInput"+idx).is(":checked")) {
+							gpxViewer.tracks[idx].isSelected = true;
+							if (gpxViewer.tracks[idx].polyline != null) {
+								alert("Polyline should have been null");
+							}
+							gpxViewer.tracks[idx].polyline = new google.maps.Polyline({
+								path : gpxViewer.tracks[idx].track,
+								map : map,
+								strokeColor: "#F00", 
+								strokeWeight: 1
+							});
+						} else {
+							gpxViewer.tracks[idx].isSelected = false;
+							if (gpxViewer.tracks[idx].polyline != null) {
+								gpxViewer.tracks[idx].polyline.setMap(null);
+								gpxViewer.tracks[idx].polyline = null;
+							}
+						}
+					};
+				})(i)
+			);
+			input.appendTo(inputTd);
+			
+			$("<td></td>").html(trackLog.name).appendTo(row);
+		}
+		
+		fileTable.appendTo(fileListDiv);
+	}
+		
+};
+
+var gpsInputInitialized = false;
+function openGpsMenu() {
+	$("#gpsMenuDiv").css("display","block");
+	
+	if (gpsInputInitialized == false) {
+		gpsInputInitialized = true;
+		$('#gpsFileInput').on("change", function() {
+			var files = $("#gpsFileInput")[0].files;
+			for (var i = 0; i < files.length; i++) {
+				var fileReader = new FileReader();
+				fileReader.onload = (function(file) {
+					return function(e) {
+						var gpsDiv = $("#gpsMenuDiv");
+						var gpx = e.target.result;
+						var doc = $.parseXML(gpx);
+						var trkpts = doc.getElementsByTagName("trkpt");
+						
+						var trackLog = {
+							name : file.name,
+							track : []
+						};
+						
+						for (var j = 0; j < trkpts.length; j++) {
+							var trkpt = trkpts[j];
+							var lat = parseFloat(trkpt.getAttribute("lat"));
+							var lon = parseFloat(trkpt.getAttribute("lon"));
+							trackLog.track.push(new google.maps.LatLng(lat,lon));
+						}
+						
+						trkpts = null;
+						doc = null;
+						gpx = null;
+						
+						gpxViewer.tracks.push(trackLog);
+						gpxViewer.redrawList();
+					};
+				})(files[i]);
+				fileReader.readAsText(files[i])
+			}
+		});
+	}
+}
+
+function closeGpsMenu() {
+	$("#gpsMenuDiv").css("display","none");
+}
