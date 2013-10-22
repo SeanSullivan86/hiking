@@ -41,10 +41,10 @@ public interface RoutesDao {
 			@Bind("lastUpdatedBy") int lastUpdatedBy,
 			@Bind("lastUpdatedTime") String lastUpdatedTime);
 	
-	@SqlUpdate("UPDATE routes SET last_updated_by = :lastUpdatedBy, last_updated_date = :lastUpdatedDate WHERE id = :id")
+	@SqlUpdate("UPDATE routes SET last_updated_by = :lastUpdatedBy, last_updated_time = :lastUpdatedTime WHERE id = :id")
 	void updateAuditColumns(@Bind("id") int id,
 			@Bind("lastUpdatedBy") int lastUpdatedBy,
-			@Bind("lastUpdatedDate") String lastUpdatedDate);
+			@Bind("lastUpdatedTime") String lastUpdatedTime);
 			
 	@SqlUpdate("delete from routes where id = :id")
 	void deleteRoute(@Bind("id") int id);

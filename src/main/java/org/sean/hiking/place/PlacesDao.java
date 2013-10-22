@@ -23,13 +23,13 @@ public interface PlacesDao {
 			@Bind("createdBy") int createdBy,
 			@Bind("creationTime") String creationTime,
 			@Bind("lastUpdatedBy") int lastUpdatedBy,
-			@Bind("lastUpdatedTime") String lsatUpdatedTime
+			@Bind("lastUpdatedTime") String lastUpdatedTime
 			);
 	
-	@SqlUpdate("UPDATE places SET last_updated_by = :lastUpdatedBy, last_updated_date = :lastUpdatedDate WHERE id = :id")
+	@SqlUpdate("UPDATE places SET last_updated_by = :lastUpdatedBy, last_updated_time = :lastUpdatedTime WHERE id = :id")
 	void updateAuditColumns(@Bind("id") int id,
 			@Bind("lastUpdatedBy") int lastUpdatedBy,
-			@Bind("lastUpdatedDate") String lastUpdatedDate);
+			@Bind("lastUpdatedTime") String lastUpdatedTime);
 	
 	@SqlUpdate("DELETE FROM places WHERE id = :id")
 	void delete(@Bind("id") int id);
