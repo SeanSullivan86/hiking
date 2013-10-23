@@ -11,7 +11,34 @@ var routesByTile = new Hashtable();
 var tilesDisplayed = new HashSet();
 var tilesInMemory = new HashSet();
 
+var isMapDataEnabled = true;
+
+function disableMapData() {
+	isMapDataEnabled = false;
+	
+	markersByPlaceId.each(function(placeId, marker) {
+	    marker.setMap(null);
+	});
+	markersByPlaceId.clear();
+	linesByRouteId.each(function(routeId, poly) {
+		poly.setMap(null);
+	});
+	linesByRouteId.clear();
+	tilesDisplayed = new HashSet();
+}
+
+function enableMapData() {
+	if (!isMapDataEnabled) {
+		isMapDataEnabled = true;
+		processMapMove();
+	}
+}
+
 function processMapMove() {
+	if (!isMapDataEnabled) {
+		return false;
+	}
+	
 	if (map.getZoom() < 12) {
 		tilesDisplayed.clear();
 		removeOffscreenMarkers();

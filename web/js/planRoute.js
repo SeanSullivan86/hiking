@@ -35,7 +35,7 @@ function TripPlan() {
 	
 	this.getEqualityString = function() {
 		var firstSegment = this.days[0].segments[0];
-		var firstRoute = routesByRouteId.get(firstSegment.routeId);
+		var firstRoute = getRouteWithFallback(firstSegment.routeId);
 		var equalityString = firstSegment.direction == 1 ? firstRoute.start
 				: firstRoute.end;
 
@@ -57,7 +57,7 @@ function TripPlan() {
 		for ( var i = 0; i < this.dayCount; i++) {
 			var day = this.days[i];
 			for ( var j = 0; j < day.segments.length; j++) {
-				var latLngArray = routesByRouteId.get(day.segments[j].routeId).getLatLngPath();
+				var latLngArray = getRouteWithFallback(day.segments[j].routeId).getLatLngPath();
 				
 				for (var k = 0; k < latLngArray.length; k++) {
 					planBounds.extend(latLngArray[k]);
@@ -78,7 +78,7 @@ function TripDay(daynum) {
 function TripSegment(routeId, direction, modeId) {
 	this.routeId = routeId; // routeId
 	this.direction = direction; // 0 = backwards, 1 = forwards
-	var route = routesByRouteId.get(routeId);
+	var route = getRouteWithFallback(routeId);
 	this.distance = route.distance;
 	this.elevationGain = direction == 1 ? route.elevationGain
 			: route.reverseGain;
@@ -329,7 +329,7 @@ var tripPlanBuilder = {
 		addPointToCurrentPlan : function(placeId) {
 			if (this.newPlanVertices.length > 0)
 				return;
-			place = placesByPlaceId.get(placeId);
+			place = getPlaceWithFallback(placeId);
 			this.newPlanVertices.push(placeId);
 			this.newPlanLastVertexMarker = new google.maps.Marker({
 				position : place.getLatLng(),
@@ -381,7 +381,7 @@ var tripPlanBuilder = {
 			this.newPlan.addCamp();
 
 			lastPlaceId = this.newPlanVertices[this.newPlanVertices.length - 1];
-			lastPlace = placesByPlaceId.get(lastPlaceId);
+			lastPlace = getPlaceWithFallback(lastPlaceId);
 
 			this.newPlanCampMarkers.push(new google.maps.Marker({
 				position : lastPlace.getLatLng(),
@@ -399,9 +399,9 @@ var tripPlanBuilder = {
 		},
 
 		addRouteToCurrentPlan : function(routeId, direction) {
-			route = routesByRouteId.get(routeId);
+			route = getRouteWithFallback(routeId);
 			lastVertexId = direction == 1 ? route.end : route.start;
-			lastPlace = placesByPlaceId.get(lastVertexId);
+			lastPlace = getPlaceWithFallback(lastVertexId);
 			this.newPlanVertices.push(lastVertexId);
 			this.newPlanLastVertexMarker.setPosition(lastPlace.getLatLng());
 			this.newPlanLines.push(new google.maps.Polyline({
@@ -434,7 +434,7 @@ var tripPlanBuilder = {
 		// if uiState is "planningRoute", then the mapdata.js handleLineClick() will
 		// call this method
 		handleNeighboringMapLineClick : function(routeId) {
-			route = routesByRouteId.get(routeId);
+			route = getRouteWithFallback(routeId);
 			var lastPlaceId = this.newPlanVertices[this.newPlanVertices.length - 1];
 			if (route.start == lastPlaceId) {
 				this.addRouteToCurrentPlan(routeId, 1);
@@ -483,18 +483,34 @@ var tripPlanBuilder = {
 
 	};
 
+function getRouteWithFallback(routeId) {
+	if (tripViewer.originalPlanRoutes.containsKey(routeId)) {
+		return tripViewer.originalPlanRoutes.get(routeId);
+	}
+	return routesByRouteId.get(routeId);
+}
+
+function getPlaceWithFallback(placeId) {
+	if (tripViewer.originalPlanPlaces.containsKey(placeId)) {
+		return tripViewer.originalPlanPlaces.get(placeId);
+	}
+	return placesByPlaceId.get(placeId);
+}
+
 var tripViewer = {
 	plan : null,
 	planLines : new Array(),
 	planCampMarkers : new Array(),
 	trip: null,
+	originalPlanPlaces : new Hashtable(),
+	originalPlanRoutes : new Hashtable(),
 	
 	drawPlan : function() {
 		for ( var i = 0; i < this.plan.days.length; i++) {
 			var day = this.plan.days[i];
 			for ( var j = 0; j < day.segments.length; j++) {
 				var segment = day.segments[j];
-				var route = routesByRouteId.get(segment.routeId);
+				var route = getRouteWithFallback(segment.routeId);
 				this.planLines.push(new google.maps.Polyline({
 					path : route.getLatLngPath(),
 					strokeColor : "#00F",
@@ -525,6 +541,22 @@ var tripViewer = {
 	clearUI : function() {
 		clearMapOverlayArray(this.planLines);
 		clearMapOverlayArray(this.planCampMarkers);
+		this.originalPlanPlaces.clear();
+		this.originalPlanRoutes.clear();
+	},
+	
+	setupOriginalPlan : function(originalPlan) {
+		this.originalPlanPlaces.clear();
+		this.originalPlanRoutes.clear();
+		for (var i = 0; i < originalPlan.places.length; i++) {
+			var place = createPlace(originalPlan.places[i]);
+			this.originalPlanPlaces.put(place.id, place);
+		}
+		for (var i = 0; i < originalPlan.routes.length; i++) {
+			var route = createRoute(originalPlan.routes[i]);
+			this.originalPlanRoutes.put(route.id, route);
+		}
+		
 	},
 	
 	setPlan: function (planId) {
@@ -538,6 +570,11 @@ var tripViewer = {
 
 		if (plansByPlanId.containsKey(planId)) {
 			this.plan = plansByPlanId.get(planId);
+			
+			if (this.plan.isMappable == 0) {
+				tripViewer.setupOriginalPlan(this.plan.originalPlan);
+			}
+			
 			this.drawPlan();
 			printPlanTable(planDetailsDiv, this.plan, false);
 			map.fitBounds(this.plan.getBounds());
@@ -549,7 +586,12 @@ var tripViewer = {
 			url : "http://192.241.227.45/api/trips/plans/" + planId,
 			success : function(planData) {
 				var jsonPlan = planData.plans[0];
-				receiveMapDataIncompleteTiles(planData);
+				if (jsonPlan.isMappable == 0) {
+					tripViewer.setupOriginalPlan(jsonPlan.originalPlan);
+				} else {
+					receiveMapDataIncompleteTiles(planData);
+					
+				}
 				tripViewer.plan = createPlan(jsonPlan);
 				plansByPlanId.put(tripViewer.plan.id, tripViewer.plan);
 				tripViewer.drawPlan();
@@ -577,7 +619,14 @@ var tripViewer = {
 			success : function(tripData) {
 				var jsonTrip = tripData.trips[0];
 				var jsonPlan = jsonTrip.plan;
-				receiveMapDataIncompleteTiles(tripData);	
+				
+				if (jsonPlan.isMappable == 0) {
+					tripViewer.setupOriginalPlan(jsonPlan.originalPlan);
+				} else {
+					receiveMapDataIncompleteTiles(tripData);
+					
+				}
+				
 				tripViewer.plan = createPlan(jsonPlan);
 				plansByPlanId.put(tripViewer.plan.id, tripViewer.plan);
 				tripViewer.drawPlan();
@@ -617,6 +666,9 @@ function createPlan(json) {
 	newPlan.id = json.id;
 	newPlan.startingPoint = json.startingPoint;
 	newPlan.endingPoint = json.endingPoint;
+	newPlan.originalPlan = json.originalPlan;
+	newPlan.originalDistance = json.originalDistance;
+	newPlan.originalGain = json.originalGain;
 
 	for ( var i = 0; i < json.segments.length; i++) {
 		var jsonSegment = json.segments[i];
@@ -667,6 +719,11 @@ var travelModeChoices = [ {
  */
 function printPlanTable(domElement, planToPrint, isEditMode) {
 	domElement.empty();
+	
+	if(planToPrint.isMappable == 0) {
+		$("<div>Warning : Some of the routes used by this trip plan have been deleted from the map since the plan was created. We're falling back to just show what this trip plan looked like when it was originally created.<br /></div>")
+			.appendTo(domElement);
+	}
 
 	var currentPlanTable = $('<table></table>').attr({
 		id : domElement.attr("id")+"_table"
@@ -678,8 +735,8 @@ function printPlanTable(domElement, planToPrint, isEditMode) {
 
 	// write the row for the first place
 	var firstSegment = planToPrint.days[0].segments[0];
-	var firstRoute = routesByRouteId.get(firstSegment.routeId);
-	var startingPlace = placesByPlaceId.get(firstSegment.direction == 1 ? firstRoute.start	: firstRoute.end);
+	var firstRoute = getRouteWithFallback(firstSegment.routeId);
+	var startingPlace = getPlaceWithFallback(firstSegment.direction == 1 ? firstRoute.start	: firstRoute.end);
 	var newRow = $("<tr></tr>").addClass("odd").appendTo(currentPlanTable);
 	$("<td></td>").html(startingPlace.name).appendTo(newRow);
 	$("<td></td>").html(startingPlace.elevation).appendTo(newRow);
@@ -691,9 +748,9 @@ function printPlanTable(domElement, planToPrint, isEditMode) {
 	for ( var i = 0; i < planToPrint.dayCount; i++) {
 		var day = planToPrint.days[i];
 		for ( var j = 0; j < day.segments.length; j++) {
-			var route = routesByRouteId.get(day.segments[j].routeId);
+			var route = getRouteWithFallback(day.segments[j].routeId);
 			var endingPlaceId = day.segments[j].direction == 1 ? route.end : route.start;
-			var endingPlace = placesByPlaceId.get(endingPlaceId);
+			var endingPlace = getPlaceWithFallback(endingPlaceId);
 			var newRow = $("<tr></tr>").addClass(j % 2 == 0 ? "even" : "odd").appendTo(currentPlanTable);
 			$("<td></td>").html(endingPlace.name).appendTo(newRow);
 			$("<td></td>").html(endingPlace.elevation).appendTo(newRow);
@@ -797,7 +854,7 @@ function updateSearchPlansResultTable(data) {
 var placeViewer = {
 	
 	setPlace : function(placeId) {
-		var place = placesByPlaceId.get(placeId);
+		var place = getPlaceWithFallback(placeId);
 		detailHistoryViewer.addItem("Place", place.name, placeId);
 		$("#itemDetailDiv").empty();
 		$("#itemDetailDiv").html("Name: " + place.name + "<br />" +
